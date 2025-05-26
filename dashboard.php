@@ -8,7 +8,11 @@ if (!isset($_SESSION['email'])) {
 
 $filesData = [];
 if (file_exists('files.json')) {
-    $filesData = json_decode(file_get_contents('files.json'), true);
+    $jsonContent = file_get_contents('files.json');
+    $filesData = json_decode($jsonContent, true);
+    if ($filesData === null) {
+        $filesData = ['files' => []];
+    }
 }
 
 $files = $filesData['files'] ?? [];
@@ -19,7 +23,6 @@ $username = $_SESSION['username'] ?? 'User';
 $profilePic = $_SESSION['profile_pic'] ?? null;
 $initial = strtoupper(substr($username, 0, 1));
 
-// Ambil pesan notifikasi upload jika ada
 $successMsg = $_SESSION['success'] ?? null;
 $errorMsg = $_SESSION['error'] ?? null;
 unset($_SESSION['success'], $_SESSION['error']);
@@ -51,6 +54,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--abu-muda);
     color: #222;
+    height: 100vh;
   }
 
   a {
@@ -72,12 +76,14 @@ unset($_SESSION['success'], $_SESSION['error']);
     color: var(--putih);
     transition: transform 0.3s ease-in-out;
   }
+
   .sidebar h2 {
     text-align: center;
     margin-bottom: 40px;
     font-weight: 700;
     font-size: 1.6rem;
   }
+
   .sidebar nav a {
     display: block;
     padding: 15px 20px;
@@ -86,7 +92,9 @@ unset($_SESSION['success'], $_SESSION['error']);
     font-weight: 600;
     transition: background-color 0.3s;
   }
-  .sidebar nav a:hover, .sidebar nav a.active {
+
+  .sidebar nav a:hover,
+  .sidebar nav a.active {
     background-color: var(--kuning);
     color: var(--biru-cerah);
     font-weight: 700;
@@ -101,23 +109,27 @@ unset($_SESSION['success'], $_SESSION['error']);
     padding: 0 30px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
+
   .header .app-name {
     font-weight: 700;
     font-size: 1.4rem;
     color: var(--biru-cerah);
   }
+
   .header .user-profile {
     display: flex;
     align-items: center;
     gap: 12px;
     cursor: pointer;
   }
+
   .header .user-profile img {
     width: 36px;
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
   }
+
   /* Placeholder foto profil jika kosong */
   .header .user-profile .placeholder {
     width: 36px;
@@ -132,6 +144,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     font-size: 1.2rem;
     user-select: none;
   }
+
   .header .user-profile span {
     font-weight: 600;
     color: var(--ungu);
@@ -160,10 +173,12 @@ unset($_SESSION['success'], $_SESSION['error']);
     border-radius: 6px;
     font-weight: 600;
   }
+
   .notification.success {
     background-color: var(--success-bg);
     color: var(--success-color);
   }
+
   .notification.error {
     background-color: var(--error-bg);
     color: var(--error-color);
@@ -175,6 +190,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     margin-bottom: 25px;
     flex-wrap: wrap;
   }
+
   .total-files {
     flex: 1 1 200px;
     background-color: var(--abu-muda);
@@ -187,6 +203,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     align-items: center;
     gap: 10px;
   }
+
   .recent-files {
     flex: 3 1 350px;
     background-color: var(--abu-muda);
@@ -194,15 +211,18 @@ unset($_SESSION['success'], $_SESSION['error']);
     padding: 20px;
     color: #333;
   }
+
   .recent-files h3 {
     margin-top: 0;
     color: var(--biru-cerah);
   }
+
   .recent-files ul {
     list-style: none;
     padding-left: 0;
     margin: 10px 0 0 0;
   }
+
   .recent-files ul li {
     padding: 6px 0;
     border-bottom: 1px solid #ccc;
@@ -214,6 +234,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     gap: 20px;
     flex-wrap: wrap;
   }
+
   .btn {
     padding: 12px 25px;
     border-radius: 6px;
@@ -227,23 +248,50 @@ unset($_SESSION['success'], $_SESSION['error']);
     transition: background-color 0.3s;
     user-select: none;
   }
+
   .btn.create {
     background-color: var(--kuning);
     color: var(--biru-cerah);
   }
+
   .btn.create:hover {
     background-color: #d4ac0d;
   }
+
   .btn.upload {
     background-color: var(--ungu);
     color: var(--putih);
   }
+
   .btn.upload:hover {
     background-color: #5c2a85;
   }
-  .btn .icon {
-    font-weight: 900;
-    font-size: 1.3rem;
+
+  /* Tombol edit dan hapus pada daftar berkas */
+  .btn.edit-btn {
+    background-color: var(--kuning);
+    color: var(--biru-cerah);
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .btn.edit-btn:hover {
+    background-color: #d4ac0d;
+  }
+
+  .btn.delete-btn {
+    background-color: var(--ungu);
+    color: var(--putih);
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .btn.delete-btn:hover {
+    background-color: #5c2a85;
   }
 
   /* Modal upload */
@@ -256,6 +304,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     align-items: center;
     z-index: 1000;
   }
+
   #uploadModal form {
     background: var(--putih);
     padding: 20px 25px;
@@ -263,14 +312,17 @@ unset($_SESSION['success'], $_SESSION['error']);
     min-width: 320px;
     box-shadow: 0 0 10px rgba(0,0,0,0.25);
   }
+
   #uploadModal form h3 {
     margin-top: 0;
     margin-bottom: 15px;
     color: var(--biru-cerah);
   }
+
   #uploadModal input[type="file"] {
     width: 100%;
   }
+
   #uploadModal button {
     cursor: pointer;
   }
@@ -283,6 +335,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     font-size: 0.9rem;
     margin-top: auto;
   }
+
   footer a {
     color: var(--kuning);
     margin: 0 10px;
@@ -296,7 +349,6 @@ unset($_SESSION['success'], $_SESSION['error']);
     }
     .sidebar {
       width: 100%;
-      height: auto;
       flex-direction: row;
       justify-content: space-around;
       padding: 10px 0;
@@ -304,142 +356,96 @@ unset($_SESSION['success'], $_SESSION['error']);
     .sidebar h2 {
       display: none;
     }
-    .sidebar nav {
-      display: flex;
-      gap: 10px;
-      width: 100%;
-      justify-content: center;
-    }
-    .sidebar nav a {
-      margin-bottom: 0;
-      padding: 10px 12px;
-      font-size: 0.9rem;
-    }
     .main-content {
       padding: 20px;
     }
-    .stats {
-      flex-direction: column;
-    }
-    .recent-files, .total-files {
-      flex: 1 1 auto;
-      margin-bottom: 20px;
-    }
-    .action-panel {
-      flex-direction: column;
-    }
-    .btn {
-      width: 100%;
-      justify-content: center;
-    }
   }
 </style>
+
 </head>
 <body>
-
-<div class="container">
-  <aside class="sidebar">
-    <h2>DocuShare</h2>
-    <nav>
-      <a href="#" class="active">Dashboard</a>
-      <a href="#">Pengaturan</a>
-      <a href="#">Berkas Saya</a>
-      <a href="#">Notifikasi</a>
-      <a href="logout.php">Logout</a>
-    </nav>
-  </aside>
-
-  <div style="flex:1; display:flex; flex-direction: column;">
-    <header class="header">
-      <div class="app-name">DocuShare</div>
-      <div class="user-profile" title="Profil Pengguna">
-        <span><?= htmlspecialchars($username) ?></span>
-        <?php if ($profilePic): ?>
-          <img src="<?= htmlspecialchars($profilePic) ?>" alt="Profil Pengguna" />
-        <?php else: ?>
-          <div class="placeholder"><?= htmlspecialchars($initial) ?></div>
-        <?php endif; ?>
-      </div>
-    </header>
-
-    <main class="main-content">
-      <?php if ($successMsg): ?>
-        <div class="notification success"><?= htmlspecialchars($successMsg) ?></div>
-      <?php endif; ?>
-      <?php if ($errorMsg): ?>
-        <div class="notification error"><?= htmlspecialchars($errorMsg) ?></div>
-      <?php endif; ?>
-
-      <div class="welcome">Selamat Datang, <?= htmlspecialchars($username) ?></div>
-
-      <div class="stats">
-        <div class="total-files">
-          <span>📁</span> Total Berkas: <strong id="totalFiles"><?= $totalFiles ?></strong>
-        </div>
-        <div class="recent-files">
-          <h3>Berkas Terbaru</h3>
-          <ul id="recentFilesList">
-            <?php if ($totalFiles > 0): ?>
-              <?php foreach ($recentFiles as $file): ?>
-                <li><?= htmlspecialchars($file) ?></li>
-              <?php endforeach; ?>
-            <?php else: ?>
-              <li>Tidak ada berkas.</li>
-            <?php endif; ?>
-          </ul>
-        </div>
-      </div>
-
-      <div class="action-panel">
-        <button class="btn create" id="btnCreate">
-          <span class="icon">＋</span> Buat Berkas Baru
-        </button>
-        <button class="btn upload" id="btnUpload">Unggah Berkas</button>
-      </div>
-
-      <!-- Modal Upload -->
-      <div id="uploadModal">
-        <form id="uploadForm" action="upload.php" method="POST" enctype="multipart/form-data">
-          <h3>Unggah Berkas Baru</h3>
-          <input type="file" name="document" accept=".pdf,.doc,.docx,.txt" required />
-          <div style="margin-top: 15px; display:flex; justify-content:flex-end; gap: 10px;">
-            <button type="button" id="cancelUpload" style="background:#ccc; border:none; padding:8px 15px; border-radius:5px;">Batal</button>
-            <button type="submit" class="btn upload" style="padding:8px 15px;">Unggah</button>
-          </div>
-        </form>
-      </div>
-    </main>
-
-    <footer>
-      <a href="#">Kebijakan Privasi</a> | <a href="#">Syarat dan Ketentuan</a><br />
-      © 2025 DocuShare
-    </footer>
-  </div>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>DocuShare</h2>
+      <nav>
+        <a href="dashboard.php" class="active">Dashboard</a>
+        <a href="kategori.php">Kategori</a>
+        <a href="logout.php">Logout</a>
+      </nav>
+    </aside>
+    <main class="main-content
+">
+<header class="header">
+<div class="app-name">DocuShare</div>
+<div class="user-profile" title="<?= htmlspecialchars($username) ?>">
+<?php if ($profilePic && file_exists($profilePic)): ?>
+<img src="<?= htmlspecialchars($profilePic) ?>" alt="Foto Profil" />
+<?php else: ?>
+<div class="placeholder"><?= $initial ?></div>
+<?php endif; ?>
+<span><?= htmlspecialchars($username) ?></span>
 </div>
+</header>  <?php if ($successMsg): ?>
+    <div class="notification success"><?= htmlspecialchars($successMsg) ?></div>
+  <?php endif; ?>
+  <?php if ($errorMsg): ?>
+    <div class="notification error"><?= htmlspecialchars($errorMsg) ?></div>
+  <?php endif; ?>
 
-<script>
-  document.getElementById('btnCreate').addEventListener('click', () => {
-    alert('Fungsi Buat Berkas Baru sedang dalam pengembangan.');
-  });
+  <div class="welcome">Selamat datang, <?= htmlspecialchars($username) ?>!</div>
 
-  const uploadModal = document.getElementById('uploadModal');
-  const btnUpload = document.getElementById('btnUpload');
-  const cancelUpload = document.getElementById('cancelUpload');
+  <div class="stats">
+    <div class="total-files">Total Berkas: <?= $totalFiles ?></div>
+    <div class="recent-files">
+      <h3>Berkas Terbaru</h3>
+      <ul>
+        <?php foreach ($recentFiles as $file): ?>
+          <li style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #ccc;">
+            <div>
+              <?= htmlspecialchars($file['name']) ?>
+              <small style="color:#666; font-style: italic;">
+                (<?= htmlspecialchars($file['category'] ?? 'Tanpa Kategori') ?>)
+              </small>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <a href="edit.php?file=<?= urlencode($file['name']) ?>"
+                 class="btn edit-btn"
+                 title="Edit Berkas <?= htmlspecialchars($file['name']) ?>">
+                Edit
+              </a>
+              <a href="hapus.php?file=<?= urlencode($file['name']) ?>"
+                 class="btn delete-btn"
+                 title="Hapus Berkas <?= htmlspecialchars($file['name']) ?>"
+                 onclick="return confirm('Apakah Anda yakin ingin menghapus berkas <?= htmlspecialchars(addslashes($file['name'])) ?>?');">
+                Hapus
+              </a>
+            </div>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
+  </div>
 
-  btnUpload.addEventListener('click', () => {
-    uploadModal.style.display = 'flex';
-  });
+  <div class="action-panel">
+    <button class="btn create" onclick="window.location.href='create.php'">
+      + Buat Berkas Baru
+    </button>
+    <button class="btn upload" onclick="document.getElementById('uploadModal').style.display = 'flex'">
+      Unggah Berkas
+    </button>
+  </div>
 
-  cancelUpload.addEventListener('click', () => {
-    uploadModal.style.display = 'none';
-  });
+  <!-- Modal Upload -->
+  <div id="uploadModal">
+    <form method="POST" action="upload.php" enctype="multipart/form-data">
+      <h3>Unggah Berkas Baru</h3>
+      <input type="file" name="uploadedFile" required />
+      <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="submit" class="btn upload">Unggah</button>
+        <button type="button" class="btn" style="background:#ccc; color:#333;" onclick="document.getElementById('uploadModal').style.display='none'">Batal</button>
+      </div>
+    </form>
+  </div>
 
-  uploadModal.addEventListener('click', (e) => {
-    if (e.target === uploadModal) {
-      uploadModal.style.display = 'none';
-    }
-  });
-</script>
-
-</body>
-</html>
+</main>
+</div> <footer> &copy; <?= date('Y') ?> DocuShare. All rights reserved. | <a href="privacy.php">Kebijakan Privasi</a> | <a href="terms.php">Syarat & Ketentuan</a> </footer> <script> // Klik di luar modal untuk tutup window.onclick = function(event) { var modal = document.getElementById('uploadModal'); if (event.target == modal) { modal.style.display = "none"; } } </script> </body> </html> ```
